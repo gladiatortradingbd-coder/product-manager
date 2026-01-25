@@ -1,41 +1,65 @@
 "use client"; // Required for React state
 
-import { useState } from "react";
-import productsData from "@/utils/data";
+import { useState, useMemo } from 'react';
+import Fuse from 'fuse.js';
+import productsData from '@/utils/data';
 
 export default function Home() {
   // State to manage products
   const [products, setProducts] = useState(productsData);
-
+  
   // State for new product form
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    description: "",
-    buyingPrice: "",
-    sellingPrice: "",
-    notes: "",
-    image: "",
+    name: '',
+    description: '',
+    buyingPrice: '',
+    sellingPrice: '',
+    notes: '',
+    image: ''
   });
-
+  
   // State for form visibility
   const [showForm, setShowForm] = useState(false);
+  
+  // State for search
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Calculate total products
   const totalProducts = products.length;
+
+  // Configure Fuse.js for fuzzy search
+  const fuse = useMemo(() => {
+    const options = {
+      keys: [
+        'name',
+        'description', 
+        'notes'
+      ],
+      threshold: 0.4, // How fuzzy the search should be (0.0 = exact, 1.0 = anything)
+      includeScore: true,
+      minMatchCharLength: 1
+    };
+    return new Fuse(products, options);
+  }, [products]);
+
+  // Filter products based on search
+  const filteredProducts = searchTerm 
+    ? fuse.search(searchTerm).map(result => result.item)
+    : products;
 
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct({
       ...newProduct,
-      [name]: value,
+      [name]: value
     });
   };
 
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    
     // Create new product object
     const productToAdd = {
       id: products.length + 1,
@@ -44,24 +68,22 @@ export default function Home() {
       buyingPrice: parseFloat(newProduct.buyingPrice) || 0,
       sellingPrice: parseFloat(newProduct.sellingPrice) || 0,
       notes: newProduct.notes,
-      image:
-        newProduct.image ||
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+      image: newProduct.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop'
     };
 
     // Add to products array
     setProducts([...products, productToAdd]);
-
+    
     // Reset form
     setNewProduct({
-      name: "",
-      description: "",
-      buyingPrice: "",
-      sellingPrice: "",
-      notes: "",
-      image: "",
+      name: '',
+      description: '',
+      buyingPrice: '',
+      sellingPrice: '',
+      notes: '',
+      image: ''
     });
-
+    
     // Hide form
     setShowForm(false);
   };
@@ -69,14 +91,19 @@ export default function Home() {
   // Handle cancel
   const handleCancel = () => {
     setNewProduct({
-      name: "",
-      description: "",
-      buyingPrice: "",
-      sellingPrice: "",
-      notes: "",
-      image: "",
+      name: '',
+      description: '',
+      buyingPrice: '',
+      sellingPrice: '',
+      notes: '',
+      image: ''
     });
     setShowForm(false);
+  };
+
+  // Handle search clear
+  const handleClearSearch = () => {
+    setSearchTerm('');
   };
 
   return (
@@ -84,12 +111,42 @@ export default function Home() {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Product Manager</h1>
-        <p className="text-gray-600">
-          Day 2 - Add Product Form (Temporary Storage)
-        </p>
+        <p className="text-gray-600">Day 3 - Fuzzy Search Added</p>
       </header>
 
-      {/* Stats Summary */}
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-gray-400">🔍</span>
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search products... Try 'iphne', 'macbok', or 'samung'"
+            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          {searchTerm && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <div className="mt-2 text-sm text-gray-500">
+          <span className="font-medium">Fuzzy search active:</span> Finds products even with typos
+          {searchTerm && (
+            <span className="ml-2">
+              • Showing {filteredProducts.length} of {products.length} products
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Summary and Add Button */}
       <div className="w-full mb-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between items-center">
@@ -253,64 +310,84 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  {/* Image */}
-                  <td className="px-6 py-4">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                  </td>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    {/* Image */}
+                    <td className="px-6 py-4">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    </td>
 
-                  {/* Product Name */}
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">
-                      {product.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      ID: {product.id}
-                    </div>
-                  </td>
+                    {/* Product Name */}
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        ID: {product.id}
+                      </div>
+                    </td>
 
-                  {/* Buying Price */}
-                  <td className="px-6 py-4">
-                    <div className="text-gray-900">${product.buyingPrice}</div>
-                  </td>
+                    {/* Buying Price */}
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900">${product.buyingPrice}</div>
+                    </td>
 
-                  {/* Selling Price */}
-                  <td className="px-6 py-4">
-                    <div className="text-green-600 font-medium">
-                      ${product.sellingPrice}
-                    </div>
-                  </td>
+                    {/* Selling Price */}
+                    <td className="px-6 py-4">
+                      <div className="text-green-600 font-medium">
+                        ${product.sellingPrice}
+                      </div>
+                    </td>
 
-                  {/* Description */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700 max-w-xs">
-                      {product.description}
-                    </div>
-                  </td>
+                    {/* Description */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-700 max-w-xs">
+                        {product.description}
+                      </div>
+                    </td>
 
-                  {/* Notes */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">{product.notes}</div>
-                  </td>
+                    {/* Notes */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">{product.notes}</div>
+                    </td>
 
-                  {/* Actions */}
-                  <td className="px-6 py-4">
-                    <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
-                        View
+                    {/* Actions */}
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2">
+                        <button className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                          View
+                        </button>
+                        <button className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">
+                          Edit
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-12 text-center">
+                    <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                    <h3 className="text-lg font-medium text-gray-700">No products found</h3>
+                    <p className="text-gray-500 mt-2">
+                      {searchTerm ? `No results for "${searchTerm}"` : 'Add your first product to get started'}
+                    </p>
+                    {searchTerm && (
+                      <button
+                        onClick={handleClearSearch}
+                        className="mt-4 text-blue-600 hover:text-blue-800"
+                      >
+                        Clear search
                       </button>
-                      <button className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300">
-                        Edit
-                      </button>
-                    </div>
+                    )}
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -319,13 +396,17 @@ export default function Home() {
       {/* Footer */}
       <footer className="mt-8 pt-6 border-t border-gray-200">
         <div className="text-center text-gray-500 text-sm">
-          <p>✅ Day 2 Complete - Add Product Form (Temporary State)</p>
-          <p className="mt-1">
-            <span className="text-blue-600">Note:</span> Products stored in
-            React state - will reset on page refresh
+          <p>
+            ✅ Day 3 Complete - Fuzzy Search Added
           </p>
-          <p className="mt-1">
-            Day 3: Fuzzy Search | Day 5: MongoDB Integration
+          <div className="mt-2 bg-blue-50 p-3 rounded-lg inline-block">
+            <p className="font-medium text-blue-800">Search Examples:</p>
+            <p className="text-blue-700">
+              iphne → iPhone • macbok → MacBook • samung → Samsung
+            </p>
+          </div>
+          <p className="mt-2">
+            <span className="text-blue-600">Next:</span> Day 4 - Edit/Delete Functionality
           </p>
         </div>
       </footer>
