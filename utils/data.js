@@ -1,17 +1,18 @@
-const fakeProducts = [
+// All original fields, simpler values
+const products = [
   {
     id: 1,
     name: "iPhone 15 Pro",
     description: "Latest Apple smartphone",
     buyingPrice: 899,
     sellingPrice: 1199,
-    notes: "In stock",
+    notes: "In stock, popular item",
     image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop"
   },
   {
     id: 2,
     name: "MacBook Air M2",
-    description: "Lightweight laptop",
+    description: "Lightweight laptop with Apple Silicon",
     buyingPrice: 999,
     sellingPrice: 1299,
     notes: "Limited stock",
@@ -20,7 +21,7 @@ const fakeProducts = [
   {
     id: 3,
     name: "Samsung Galaxy S24",
-    description: "Android flagship phone",
+    description: "Android flagship with AI features",
     buyingPrice: 799,
     sellingPrice: 999,
     notes: "New arrival",
@@ -29,7 +30,7 @@ const fakeProducts = [
   {
     id: 4,
     name: "Sony Headphones",
-    description: "Noise cancelling headphones",
+    description: "Noise cancelling wireless headphones",
     buyingPrice: 299,
     sellingPrice: 399,
     notes: "Best seller",
@@ -38,7 +39,7 @@ const fakeProducts = [
   {
     id: 5,
     name: "Apple Watch",
-    description: "Smartwatch",
+    description: "Smartwatch with health monitoring",
     buyingPrice: 349,
     sellingPrice: 449,
     notes: "On sale",
@@ -46,4 +47,4 @@ const fakeProducts = [
   }
 ];
 
-export default fakeProducts;
+export default products;
