@@ -1,0 +1,49 @@
+--- app/page.js
++++ app/page.js
+@@ -125,7 +125,7 @@
+         
+       } else if (formMode === 'edit') {
+         const response = await fetch(`/api/products/${formData.id}`, {
+           method: 'PUT',
+           headers: {
+             'Content-Type': 'application/json',
+           },
+           body: JSON.stringify({
+             name: formData.name,
+             description: formData.description,
+             buyingPrice: parseFloat(formData.buyingPrice) || 0,
+             sellingPrice: parseFloat(formData.sellingPrice) || 0,
+             notes: formData.notes,
+             image: formData.image
+           }),
+         });
+         
+         const result = await response.json();
+         
+         if (result.success) {
+           await fetchProducts();
+           setError(null);
+         } else {
+           setError(result.error);
+         }
+       }
+       
+       // Reset form and hide
+       setFormData({
+         id: null,
+         name: '',
+         description: '',
+         buyingPrice: '',
+         sellingPrice: '',
+         notes: '',
+         image: ''
+       });
+       setShowForm(false);
+       setFormMode('add');
+       
+     } catch (err) {
+       setError('Failed to save product');
+     } finally {
+       setLoading(false);
+     }
+   };

@@ -1,0 +1,3 @@
+// Too long to show here - but the fix is:
+// In handleEditClick: formData.id = product._id (not product.id)
+// In handleSubmit: use formData.id for the API call
